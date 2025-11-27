@@ -3,7 +3,7 @@ import '../../models/request.dart';
 import '../../services/sqlite/database_helper.dart';
 
 class AddRequestScreen extends StatefulWidget {
-  const AddRequestScreen({Key? key}) : super(key: key);
+  const AddRequestScreen({super.key});
 
   @override
   State<AddRequestScreen> createState() => _AddRequestScreenState();
