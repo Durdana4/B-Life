@@ -41,6 +41,31 @@ class DatabaseHelper {
       extraInfo TEXT
     )
     ''');
+
+    // --- SAMPLE DATA INSERTION ---
+    await db.insert('requests', {
+      'name': 'Emily',
+      'surname': 'Thompson',
+      'bloodType': 'I+',
+      'birthDate': '1997-08-12',
+      'neededDate': '2025-02-10',
+      'disease': 'None',
+      'address': 'Tashkent',
+      'contactNumber': '901234567',
+      'extraInfo': 'Urgent case'
+    });
+
+    await db.insert('requests', {
+      'name': 'Sarah',
+      'surname': 'Johnson',
+      'bloodType': 'II-',
+      'birthDate': '1988-04-05',
+      'neededDate': '2025-02-15',
+      'disease': 'Diabetes',
+      'address': 'Samarkand',
+      'contactNumber': '933456789',
+      'extraInfo': 'Needs rare blood type'
+    });
   }
 
   // Create
