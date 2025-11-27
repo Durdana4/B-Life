@@ -1,125 +1,188 @@
 import 'package:flutter/material.dart';
+import '../../services/database/database_helper.dart';
+import '../../models/request.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  int totalRequests = 0;
+  List<RequestModel> recentRequests = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDashboardData();
+  }
+
+  Future<void> _loadDashboardData() async {
+    final all = await DatabaseHelper.instance.getAllRequests();
+    setState(() {
+      totalRequests = all.length;
+      recentRequests = all.reversed.take(3).toList(); // last 3 requests
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xfff7f7f7),
       appBar: AppBar(
-        elevation: 0,
+        title: const Text("Dashboard"),
         backgroundColor: Colors.redAccent,
-        centerTitle: true,
-        title: const Text(
-          "B-Life Dashboard",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
       ),
-
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // WELCOME TITLE
+            // Greeting
             const Text(
-              "Welcome Back! 👋",
+              "Hello Jamol 👋",
               style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
               ),
             ),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             const Text(
-              "Choose an action below",
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-
-            const SizedBox(height: 25),
-
-            // FIRST ROW BUTTONS (ADD + VIEW REQUESTS)
-            Row(
-              children: [
-                _homeButton(
-                  context,
-                  icon: Icons.add_circle,
-                  label: "Add Request",
-                  color: Colors.redAccent,
-                  route: '/addRequest',
-                ),
-
-                const SizedBox(width: 16),
-
-                _homeButton(
-                  context,
-                  icon: Icons.list_alt,
-                  label: "Requests",
-                  color: Colors.blueAccent,
-                  route: '/home',
-                ),
-              ],
+              "Welcome back! Here's your summary:",
+              style: TextStyle(fontSize: 16, color: Colors.black54),
             ),
 
             const SizedBox(height: 20),
 
-            // SECOND ROW (DONORS)
+            // STAT CARDS
             Row(
               children: [
-                _homeButton(
-                  context,
+                Expanded(child: _statCard(Icons.bloodtype, "Total", "$totalRequests")),
+                const SizedBox(width: 12),
+                Expanded(child: _statCard(Icons.pending_actions, "Pending", "0")),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
+            Row(
+              children: [
+                Expanded(child: _statCard(Icons.check_circle, "Fulfilled", "0")),
+                const SizedBox(width: 12),
+                Expanded(child: _statCard(Icons.event, "Upcoming", "0")),
+              ],
+            ),
+
+            const SizedBox(height: 25),
+
+            // QUICK ACTION BUTTONS
+            const Text(
+              "Quick Actions",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 12),
+
+            Row(
+              children: [
+                _quickAction(
+                  icon: Icons.add_circle,
+                  label: "Add Request",
+                  onTap: () => Navigator.pushNamed(context, '/addRequest'),
+                ),
+                _quickAction(
                   icon: Icons.people,
-                  label: "Donors",
-                  color: Colors.green,
-                  route: '/donors', // we will build this screen later
+                  label: "Donor List",
+                  onTap: () {},
+                ),
+                _quickAction(
+                  icon: Icons.search,
+                  label: "Find Donor",
+                  onTap: () {},
                 ),
               ],
             ),
+
+            const SizedBox(height: 30),
+
+            // RECENT ACTIVITY
+            const Text(
+              "Recent Requests",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 12),
+
+            ...recentRequests.map((r) => _recentItem(r)),
           ],
         ),
       ),
     );
   }
 
-  Widget _homeButton(
-      BuildContext context, {
-        required IconData icon,
-        required String label,
-        required Color color,
-        required String route,
-      }) {
+  // --- Widgets below ---
+
+  Widget _statCard(IconData icon, String title, String value) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.redAccent.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Icon(icon, size: 32, color: Colors.redAccent),
+          const SizedBox(height: 12),
+          Text(title, style: const TextStyle(fontSize: 16)),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _quickAction({required IconData icon, required String label, required Function() onTap}) {
     return Expanded(
-      child: InkWell(
-        onTap: () => Navigator.pushNamed(context, route),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              Icon(icon, size: 40, color: color),
-              const SizedBox(height: 12),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              )
-            ],
-          ),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Column(
+          children: [
+            CircleAvatar(
+              radius: 28,
+              backgroundColor: Colors.redAccent.withOpacity(0.15),
+              child: Icon(icon, size: 28, color: Colors.redAccent),
+            ),
+            const SizedBox(height: 8),
+            Text(label, style: const TextStyle(fontSize: 14)),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _recentItem(RequestModel r) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: ListTile(
+        title: Text("${r.name} ${r.surname}"),
+        subtitle: Text("Need: ${r.neededDate}\nLocation: ${r.address}"),
+        trailing: const Icon(Icons.arrow_forward_ios),
+        onTap: () {
+          Navigator.pushNamed(
+            context,
+            '/requestDetails',
+            arguments: r.id,
+          );
+        },
       ),
     );
   }
