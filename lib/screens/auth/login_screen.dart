@@ -21,18 +21,24 @@ class _LoginScreenState extends State<LoginScreen> {
     return reg.hasMatch(value) ? null : 'Enter a valid email';
   }
 
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) return 'Password is required';
+    if (value.length < 6) return 'Minimum 6 characters required';
+    return null;
+  }
+
   void _login() {
     if (_formKey.currentState?.validate() ?? false) {
-      // ...existing code...
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Login successful (placeholder)')),
       );
-      // On success, you can navigate to main app screen
+
+      // Navigate to the home screen
+      Navigator.pushReplacementNamed(context, '/home');
     }
   }
 
   void _resetPassword() {
-    // Small placeholder action for reset
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Password reset flow (placeholder)')),
     );
@@ -60,12 +66,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 decoration: InputDecoration(
                   labelText: 'Password',
                   suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                    icon: Icon(
+                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: () => setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    }),
                   ),
                 ),
                 obscureText: _obscurePassword,
-                validator: (v) => (v == null || v.isEmpty) ? 'Password is required' : null,
+                validator: _validatePassword,
               ),
 
               const SizedBox(height: 20),
@@ -86,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.pushReplacementNamed(context, '/register');
+                      Navigator.pushNamed(context, '/register');
                     },
                     child: const Text('Register instead'),
                   ),
