@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/request.dart';
-import '../../services/sqlite/database_helper.dart';
+import '../../services/database/database_helper.dart';
 
 class AddRequestScreen extends StatefulWidget {
   const AddRequestScreen({super.key});
