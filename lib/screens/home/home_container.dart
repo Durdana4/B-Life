@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../requests/requests_list_screen.dart';
+import '../requests/add_request_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../profile/profile_screen.dart';
+import '../../widgets/app_navigation.dart';
 
 class HomeContainer extends StatefulWidget {
   const HomeContainer({super.key});
@@ -14,8 +16,9 @@ class _HomeContainerState extends State<HomeContainer> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = const [
-    RequestsListScreen(),
     DashboardScreen(),
+    AddRequestScreen(),
+    RequestsListScreen(),
     ProfileScreen(),
   ];
 
@@ -24,30 +27,13 @@ class _HomeContainerState extends State<HomeContainer> {
     return Scaffold(
       body: _screens[_currentIndex],
 
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: AppNavigation(
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
-        selectedItemColor: Colors.redAccent,
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list_alt),
-            label: "Requests",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: "Dashboard",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "Profile",
-          ),
-        ],
       ),
     );
   }
