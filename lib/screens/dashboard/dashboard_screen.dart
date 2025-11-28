@@ -1,15 +1,4 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
-
-class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Dashboard')),
-      body: const Center(
-        child: Text('Welcome to the dashboard'),
 =======
 import '../../services/database/database_helper.dart';
 import '../../models/request.dart';
