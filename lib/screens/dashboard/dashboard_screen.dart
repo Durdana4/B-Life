@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-=======
 import '../../services/database/database_helper.dart';
 import '../../models/request.dart';
 
@@ -184,7 +183,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             arguments: r.id,
           );
         },
->>>>>>> 632509316a42f15f0abc6a982517b0cd25c8a535
       ),
     );
   }
