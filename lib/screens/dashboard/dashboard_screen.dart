@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../services/database/database_helper.dart';
-import '../../models/request.dart';
+import '../../models/user_model.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -10,179 +9,360 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  int totalRequests = 0;
-  List<RequestModel> recentRequests = [];
+  late UserModel user;
 
   @override
   void initState() {
     super.initState();
-    _loadDashboardData();
-  }
-
-  Future<void> _loadDashboardData() async {
-    final all = await DatabaseHelper.instance.getAllRequests();
-    setState(() {
-      totalRequests = all.length;
-      recentRequests = all.reversed.take(3).toList(); // last 3 requests
-    });
+    user = UserModel.mock();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Dashboard"),
-        backgroundColor: Colors.redAccent,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Greeting
-            const Text(
-              "Hello Jamol 👋",
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(height: 10),
-            const Text(
-              "Welcome back! Here's your summary:",
-              style: TextStyle(fontSize: 16, color: Colors.black54),
-            ),
-
-            const SizedBox(height: 20),
-
-            // STAT CARDS
-            Row(
-              children: [
-                Expanded(child: _statCard(Icons.bloodtype, "Total", "$totalRequests")),
-                const SizedBox(width: 12),
-                Expanded(child: _statCard(Icons.pending_actions, "Pending", "0")),
-              ],
-            ),
-
-            const SizedBox(height: 12),
-
-            Row(
-              children: [
-                Expanded(child: _statCard(Icons.check_circle, "Fulfilled", "0")),
-                const SizedBox(width: 12),
-                Expanded(child: _statCard(Icons.event, "Upcoming", "0")),
-              ],
-            ),
-
-            const SizedBox(height: 25),
-
-            // QUICK ACTION BUTTONS
-            const Text(
-              "Quick Actions",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 12),
-
-            Row(
-              children: [
-                _quickAction(
-                  icon: Icons.add_circle,
-                  label: "Add Request",
-                  onTap: () => Navigator.pushNamed(context, '/addRequest'),
-                ),
-                _quickAction(
-                  icon: Icons.people,
-                  label: "Donor List",
-                  onTap: () {},
-                ),
-                _quickAction(
-                  icon: Icons.search,
-                  label: "Find Donor",
-                  onTap: () {},
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 30),
-
-            // RECENT ACTIVITY
-            const Text(
-              "Recent Requests",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 12),
-
-            ...recentRequests.map((r) => _recentItem(r)),
-          ],
+      backgroundColor: Colors.grey[50],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(),
+              const SizedBox(height: 24),
+              _buildStatusCard(),
+              const SizedBox(height: 24),
+              _buildSectionTitle("Personal Information"),
+              const SizedBox(height: 12),
+              _buildPersonalInfo(),
+              const SizedBox(height: 24),
+              _buildSectionTitle("Donation History"),
+              const SizedBox(height: 12),
+              _buildDonationHistory(),
+              const SizedBox(height: 24),
+              _buildSectionTitle("Health & Tips"),
+              const SizedBox(height: 12),
+              _buildHealthTips(),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // --- Widgets below ---
-
-  Widget _statCard(IconData icon, String title, String value) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.redAccent.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Icon(icon, size: 32, color: Colors.redAccent),
-          const SizedBox(height: 12),
-          Text(title, style: const TextStyle(fontSize: 16)),
-          const SizedBox(height: 4),
-          Text(
-            value,
+  Widget _buildHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Hello, ${user.name} 👋",
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                const Icon(Icons.location_on, size: 16, color: Colors.grey),
+                const SizedBox(width: 4),
+                Text(
+                  user.location,
+                  style: const TextStyle(color: Colors.grey),
+                ),
+              ],
+            ),
+          ],
+        ),
+        CircleAvatar(
+          radius: 24,
+          backgroundColor: Colors.redAccent.withOpacity(0.1),
+          child: Text(
+            user.bloodType,
             style: const TextStyle(
-              fontSize: 22,
+              color: Colors.redAccent,
               fontWeight: FontWeight.bold,
             ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFEF5350), Color(0xFFE53935)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.redAccent.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Donor Status",
+                style: TextStyle(color: Colors.white70, fontSize: 16),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  user.isEligible ? "Eligible" : "Not Eligible",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Next Donation",
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    user.nextDonationDate,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  const Text(
+                    "Total Donations",
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "${user.totalDonations}",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _quickAction({required IconData icon, required String label, required Function() onTap}) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Column(
-          children: [
-            CircleAvatar(
-              radius: 28,
-              backgroundColor: Colors.redAccent.withOpacity(0.15),
-              child: Icon(icon, size: 28, color: Colors.redAccent),
-            ),
-            const SizedBox(height: 8),
-            Text(label, style: const TextStyle(fontSize: 14)),
-          ],
-        ),
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: Colors.black87,
       ),
     );
   }
 
-  Widget _recentItem(RequestModel r) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: ListTile(
-        title: Text("${r.name} ${r.surname}"),
-        subtitle: Text("Need: ${r.neededDate}\nLocation: ${r.address}"),
-        trailing: const Icon(Icons.arrow_forward_ios),
-        onTap: () {
-          Navigator.pushNamed(
-            context,
-            '/requestDetails',
-            arguments: r.id,
-          );
-        },
+  Widget _buildPersonalInfo() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          _infoRow(Icons.phone, "Phone", user.phone),
+          const Divider(),
+          _infoRow(Icons.badge, "Passport ID", user.passportId),
+          const Divider(),
+          _infoRow(Icons.person, "Gender", user.gender),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.redAccent.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, size: 20, color: Colors.redAccent),
+          ),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDonationHistory() {
+    // Mock history data
+    final history = [
+      {"date": "15 Oct 2023", "location": "Central Hospital", "amount": "450ml"},
+      {"date": "10 Jun 2023", "location": "City Clinic", "amount": "450ml"},
+    ];
+
+    return Column(
+      children: history.map((item) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.withOpacity(0.1)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.check, color: Colors.green, size: 20),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item["location"]!,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      item["date"]!,
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                item["amount"]!,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black54,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildHealthTips() {
+    return SizedBox(
+      height: 140,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          _tipCard(
+            "Hydration is Key",
+            "Drink plenty of water before donation.",
+            Colors.blue.shade50,
+            Colors.blue,
+          ),
+          _tipCard(
+            "Iron Rich Food",
+            "Eat iron-rich foods like spinach.",
+            Colors.green.shade50,
+            Colors.green,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _tipCard(String title, String desc, Color bgColor, Color accentColor) {
+    return Container(
+      width: 200,
+      margin: const EdgeInsets.only(right: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.lightbulb, color: accentColor),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: accentColor,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            desc,
+            style: TextStyle(color: accentColor.withOpacity(0.8), fontSize: 12),
+          ),
+        ],
       ),
     );
   }
