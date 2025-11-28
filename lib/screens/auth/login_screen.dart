@@ -23,11 +23,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _login() {
     if (_formKey.currentState?.validate() ?? false) {
-      // ...existing code...
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Login successful (placeholder)')),
       );
-      // On success, you can navigate to main app screen
+      Navigator.pushReplacementNamed(context, '/dashboard');
     }
   }
 

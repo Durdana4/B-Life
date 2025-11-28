@@ -47,12 +47,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   void _register() {
     if (_formKey.currentState?.validate() ?? false) {
-      // ...existing code...
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Registered successfully (placeholder)')),
       );
-      // After register, navigate to login
-      Navigator.pushReplacementNamed(context, '/login');
+      Navigator.pushReplacementNamed(context, '/dashboard');
     }
   }
 
