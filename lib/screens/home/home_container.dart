@@ -4,6 +4,7 @@ import '../requests/add_request_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../profile/profile_screen.dart';
 import '../../widgets/app_navigation.dart';
+import '../donors/donors_list_screen.dart';
 
 class HomeContainer extends StatefulWidget {
   const HomeContainer({super.key});
@@ -19,6 +20,7 @@ class _HomeContainerState extends State<HomeContainer> {
     DashboardScreen(),
     AddRequestScreen(),
     RequestsListScreen(),
+    DonorsListScreen(),
     ProfileScreen(),
   ];
 
