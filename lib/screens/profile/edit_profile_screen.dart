@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/user_model.dart';
 import '../../services/database/database_helper.dart';
 import 'edit_phone_screen.dart';
-import 'edit_location_screen.dart' show EditLocationScreen;   // FIXED IMPORT
+import 'edit_location_screen.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final UserModel user;
@@ -19,6 +19,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController nameCtrl;
   late TextEditingController surnameCtrl;
   late TextEditingController emailCtrl;
+  late TextEditingController passportCtrl;
 
   String? selectedGender;
   String? selectedBloodType;
@@ -30,6 +31,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     nameCtrl = TextEditingController(text: widget.user.name);
     surnameCtrl = TextEditingController(text: widget.user.surname);
     emailCtrl = TextEditingController(text: widget.user.email);
+    passportCtrl = TextEditingController(text: widget.user.passportId);
 
     selectedGender = widget.user.gender;
     selectedBloodType = widget.user.bloodType;
@@ -44,6 +46,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       email: emailCtrl.text.trim(),
       gender: selectedGender!,
       bloodType: selectedBloodType!,
+      passportId: passportCtrl.text.trim(),
     );
 
     await DatabaseHelper.instance.updateUser(updatedUser);
@@ -70,11 +73,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               _input(surnameCtrl, "Surname"),
               _input(emailCtrl, "Email", type: TextInputType.emailAddress),
 
+              // PASSPORT ID FIELD
+              _passportField(),
+
               const SizedBox(height: 20),
               _section("Gender"),
 
               DropdownButtonFormField<String>(
-                initialValue: selectedGender,   // FIXED
+                value: selectedGender,
                 items: ["Male", "Female"]
                     .map((g) => DropdownMenuItem(value: g, child: Text(g)))
                     .toList(),
@@ -86,12 +92,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               _section("Blood Type"),
 
               DropdownButtonFormField<String>(
-                initialValue: selectedBloodType, // FIXED
+                value: selectedBloodType,
                 items: ["I+", "I-", "II+", "II-", "III+", "III-", "IV+", "IV-"]
                     .map((b) => DropdownMenuItem(value: b, child: Text(b)))
                     .toList(),
                 onChanged: (v) => setState(() => selectedBloodType = v),
-                validator: (v) => v == null ? "Please select blood type" : null,
+                validator: (v) =>
+                v == null ? "Please select blood type" : null,
               ),
 
               const SizedBox(height: 30),
@@ -107,7 +114,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       builder: (_) => EditPhoneScreen(user: widget.user),
                     ),
                   );
-
                   if (updated == true) setState(() {});
                 },
               ),
@@ -122,7 +128,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       builder: (_) => EditLocationScreen(user: widget.user),
                     ),
                   );
-
                   if (updated == true) setState(() {});
                 },
               ),
@@ -133,18 +138,41 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 onPressed: _saveProfile,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.redAccent,
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 40, vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child:
-                const Text("Save Changes", style: TextStyle(fontSize: 16)),
+                child: const Text("Save Changes",
+                    style: TextStyle(fontSize: 16)),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  // PASSPORT FIELD
+  Widget _passportField() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TextFormField(
+        controller: passportCtrl,
+        decoration: const InputDecoration(labelText: "Passport ID"),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return "Please enter passport ID";
+          }
+
+          final regex = RegExp(r"^[A-Z]{2}[0-9]{7}$");
+          if (!regex.hasMatch(value)) {
+            return "Format must be: AA1234567";
+          }
+
+          return null;
+        },
       ),
     );
   }
@@ -168,9 +196,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       alignment: Alignment.centerLeft,
       child: Padding(
         padding: const EdgeInsets.only(bottom: 10),
-        child: Text(title,
-            style:
-            const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        child: Text(
+          title,
+          style:
+          const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }

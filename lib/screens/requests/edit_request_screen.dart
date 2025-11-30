@@ -58,27 +58,42 @@ class _EditRequestScreenState extends State<EditRequestScreen> {
     setState(() => loading = false);
   }
 
+  // ----------------------
+  //   DATE PICKERS FIXED
+  // ----------------------
+  DateTime _safeParse(String text, DateTime fallback) {
+    try {
+      return DateTime.parse(text);
+    } catch (_) {
+      return fallback;
+    }
+  }
+
   Future<void> pickBirthDate() async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.tryParse(_birthCtrl.text) ?? DateTime(2000),
+      initialDate: _safeParse(_birthCtrl.text, DateTime(2000)),
       firstDate: DateTime(1950),
       lastDate: DateTime.now(),
     );
+
     if (picked != null) {
-      _birthCtrl.text = picked.toIso8601String().split("T").first;
+      _birthCtrl.text =
+      "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
     }
   }
 
   Future<void> pickNeededDate() async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.tryParse(_neededCtrl.text) ?? DateTime.now(),
+      initialDate: _safeParse(_neededCtrl.text, DateTime.now()),
       firstDate: DateTime.now(),
       lastDate: DateTime(2100),
     );
+
     if (picked != null) {
-      _neededCtrl.text = picked.toIso8601String().split("T").first;
+      _neededCtrl.text =
+      "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
     }
   }
 
@@ -101,7 +116,7 @@ class _EditRequestScreenState extends State<EditRequestScreen> {
     await DatabaseHelper.instance.updateRequest(updated);
 
     ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Request updated"))
+      const SnackBar(content: Text("Request updated")),
     );
 
     Navigator.pop(context, true);
@@ -121,70 +136,79 @@ class _EditRequestScreenState extends State<EditRequestScreen> {
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
-          child: ListView(children: [
-            TextFormField(
-              controller: _nameCtrl,
-              decoration: const InputDecoration(labelText: "Name"),
-              validator: (v)=> v==null || v.isEmpty ? "Required" : null,
-            ),
-            TextFormField(
-              controller: _surnameCtrl,
-              decoration: const InputDecoration(labelText: "Surname"),
-              validator: (v)=> v==null || v.isEmpty ? "Required" : null,
-            ),
+          child: ListView(
+            children: [
+              TextFormField(
+                controller: _nameCtrl,
+                decoration: const InputDecoration(labelText: "Name"),
+                validator: (v) => v == null || v.isEmpty ? "Required" : null,
+              ),
+              TextFormField(
+                controller: _surnameCtrl,
+                decoration: const InputDecoration(labelText: "Surname"),
+                validator: (v) => v == null || v.isEmpty ? "Required" : null,
+              ),
 
-            DropdownButtonFormField<String>(
-              value: selectedBlood,
-              decoration: const InputDecoration(labelText: "Blood Type"),
-              items: bloodTypes.map((e)=>DropdownMenuItem(value:e,child:Text(e))).toList(),
-              onChanged: (v)=> setState(()=> selectedBlood = v),
-              validator: (v)=> v == null ? "Required" : null,
-            ),
+              DropdownButtonFormField<String>(
+                value: selectedBlood,
+                decoration: const InputDecoration(labelText: "Blood Type"),
+                items: bloodTypes
+                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                    .toList(),
+                onChanged: (v) => setState(() => selectedBlood = v),
+                validator: (v) => v == null ? "Required" : null,
+              ),
 
-            TextFormField(
-              controller: _birthCtrl,
-              readOnly: true,
-              decoration: const InputDecoration(labelText: "Birth Date"),
-              onTap: pickBirthDate,
-              validator: (v)=> v==null || v.isEmpty ? "Required" : null,
-            ),
+              TextFormField(
+                controller: _birthCtrl,
+                readOnly: true,
+                decoration: const InputDecoration(labelText: "Birth Date"),
+                onTap: pickBirthDate,
+                validator: (v) => v == null || v.isEmpty ? "Required" : null,
+              ),
 
-            TextFormField(
-              controller: _neededCtrl,
-              readOnly: true,
-              decoration: const InputDecoration(labelText: "Needed Date"),
-              onTap: pickNeededDate,
-              validator: (v)=> v==null || v.isEmpty ? "Required" : null,
-            ),
+              TextFormField(
+                controller: _neededCtrl,
+                readOnly: true,
+                decoration: const InputDecoration(labelText: "Needed Date"),
+                onTap: pickNeededDate,
+                validator: (v) => v == null || v.isEmpty ? "Required" : null,
+              ),
 
-            TextFormField(
-              controller: _phoneCtrl,
-              keyboardType: TextInputType.phone,
-              inputFormatters: [phoneMask],
-              decoration: const InputDecoration(labelText: "Contact Number"),
-              validator: (v)=> v==null || v.length < 17 ? "Invalid phone" : null,
-            ),
+              TextFormField(
+                controller: _phoneCtrl,
+                keyboardType: TextInputType.phone,
+                inputFormatters: [phoneMask],
+                decoration: const InputDecoration(labelText: "Contact Number"),
+                validator: (v) => v == null || v.length < 17
+                    ? "Invalid phone"
+                    : null,
+              ),
 
-            TextFormField(
-              controller: _addressCtrl,
-              decoration: const InputDecoration(labelText: "Address"),
-              validator: (v)=> v==null || v.isEmpty ? "Required" : null,
-            ),
+              TextFormField(
+                controller: _addressCtrl,
+                decoration: const InputDecoration(labelText: "Address"),
+                validator: (v) => v == null || v.isEmpty ? "Required" : null,
+              ),
 
-            TextFormField(
-              controller: _diseaseCtrl,
-              decoration: const InputDecoration(labelText: "Disease"),
-            ),
+              TextFormField(
+                controller: _diseaseCtrl,
+                decoration: const InputDecoration(labelText: "Disease"),
+              ),
 
-            TextFormField(
-              controller: _extraCtrl,
-              maxLines: 2,
-              decoration: const InputDecoration(labelText: "Extra Info"),
-            ),
+              TextFormField(
+                controller: _extraCtrl,
+                maxLines: 2,
+                decoration: const InputDecoration(labelText: "Extra Info"),
+              ),
 
-            const SizedBox(height: 20),
-            ElevatedButton(onPressed: save, child: const Text("Save Changes")),
-          ]),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: save,
+                child: const Text("Save Changes"),
+              ),
+            ],
+          ),
         ),
       ),
     );
