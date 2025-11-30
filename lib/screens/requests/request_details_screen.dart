@@ -19,17 +19,45 @@ class _RequestDetailsScreenState extends State<RequestDetailsScreen> {
     });
   }
 
-  Future<void> _deleteRequest(int id) async {
-    await DatabaseHelper.instance.deleteRequest(id);
-    Navigator.pop(context); // go back to list
+  Future<void> _confirmDelete(int id) async {
+    final bool? result = await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Delete Request"),
+        content: const Text("Are you sure you want to delete this request?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Delete"),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      await DatabaseHelper.instance.deleteRequest(id);
+      Navigator.pop(context, true); // return true for refresh
+    }
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // Receive request ID from navigation arguments
-    final int id = ModalRoute.of(context)!.settings.arguments as int;
+    final args = ModalRoute.of(context)!.settings.arguments;
+    if (args == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No request ID provided!")),
+      );
+      Navigator.pop(context);
+      return;
+    }
+
+    final int id = args as int;
     _loadRequest(id);
   }
 
@@ -43,7 +71,7 @@ class _RequestDetailsScreenState extends State<RequestDetailsScreen> {
             icon: const Icon(Icons.delete),
             onPressed: () {
               if (request != null) {
-                _deleteRequest(request!.id!);
+                _confirmDelete(request!.id!);
               }
             },
           ),
@@ -65,7 +93,7 @@ class _RequestDetailsScreenState extends State<RequestDetailsScreen> {
             _info("Contact Number", request!.contactNumber),
             _info("Extra Info", request!.extraInfo),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
             ElevatedButton(
               onPressed: () {
@@ -73,8 +101,10 @@ class _RequestDetailsScreenState extends State<RequestDetailsScreen> {
                   context,
                   '/editRequest',
                   arguments: request!.id,
-                ).then((_) {
-                  _loadRequest(request!.id!);
+                ).then((updated) {
+                  if (updated == true) {
+                    _loadRequest(request!.id!);
+                  }
                 });
               },
               child: const Text("Edit Request"),
@@ -87,15 +117,20 @@ class _RequestDetailsScreenState extends State<RequestDetailsScreen> {
 
   Widget _info(String title, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style:
-              const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+          Text(
+            title,
+            style:
+            const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 4),
-          Text(value, style: const TextStyle(fontSize: 16)),
+          Text(
+            value.isEmpty ? "Not provided" : value,
+            style: const TextStyle(fontSize: 16),
+          ),
         ],
       ),
     );
