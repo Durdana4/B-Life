@@ -2,15 +2,33 @@
 
 A new Flutter project.
 
-## Getting Started
+"Registration and Login Pages"
+Student: Arislanbek Kalbaev
+ID: 220081
 
-This project is a starting point for a Flutter application.
+In this project's scope, my responsibilities included developing user interface for registration and login pages for users.
 
-A few resources to get you started if this is your first Flutter project:
+In Registration page, a user can enter:
+1) First name (string)
+2) Last name (string)
+3) Passport (two characters, 7 integers format)
+4) Date of Birth (in dd:mm:yyyy)
+5) email account (string)
+4) password
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Validation: all data fields are mandatory to enter and a user cannot proceed further without entering them. Otherwise, alert/notification in standard red color is the output in UI.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+In Login page, a user can enter his following login credentials after registering in the app:
+1) Email
+2) Passport
+
+Validation: all data fields are mandatory to enter and a user cannot proceed further without entering them. Otherwise, alert/notification in standard red color is the output in UI.
+
+Widgets used:
+- Input fields
+- Buttons
+- Labels
+- Layout
+- Validation
+
+From registration page he can move to login page and vice versa. After a user passes either of the screens successfully, he is transferred to Dashboard page.
