@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/user_model.dart';
+import '../../services/database/database_helper.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -9,16 +10,29 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  late UserModel user;
+  UserModel? user;
 
   @override
   void initState() {
     super.initState();
-    user = UserModel.mock();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    final data = await DatabaseHelper.instance.getUserById(1);
+    setState(() {
+      user = data;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (user == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: SafeArea(
@@ -57,7 +71,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Hello, ${user.name} 👋",
+              "Hello, ${user!.name} 👋",
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -69,19 +83,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 const Icon(Icons.location_on, size: 16, color: Colors.grey),
                 const SizedBox(width: 4),
-                Text(
-                  user.location,
-                  style: const TextStyle(color: Colors.grey),
-                ),
+                Text(user!.location, style: const TextStyle(color: Colors.grey)),
               ],
             ),
           ],
         ),
         CircleAvatar(
           radius: 24,
-          backgroundColor: Colors.redAccent.withOpacity(0.1),
+          backgroundColor: Colors.redAccent.withValues(alpha: 0.1),
           child: Text(
-            user.bloodType,
+            user!.bloodType,
             style: const TextStyle(
               color: Colors.redAccent,
               fontWeight: FontWeight.bold,
@@ -104,7 +115,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.redAccent.withOpacity(0.3),
+            color: Colors.redAccent.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -120,13 +131,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 style: TextStyle(color: Colors.white70, fontSize: 16),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  user.isEligible ? "Eligible" : "Not Eligible",
+                  user!.isEligible ? "Eligible" : "Not Eligible",
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -148,7 +160,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    user.nextDonationDate,
+                    user!.nextDonationDate,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -166,7 +178,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "${user.totalDonations}",
+                    "${user!.totalDonations}",
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -201,7 +213,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.05),
+            color: Colors.grey.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -209,11 +221,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       child: Column(
         children: [
-          _infoRow(Icons.phone, "Phone", user.phone),
+          _infoRow(Icons.phone, "Phone", user!.phone),
           const Divider(),
-          _infoRow(Icons.badge, "Passport ID", user.passportId),
+          _infoRow(Icons.badge, "Passport ID", user!.passportId),
           const Divider(),
-          _infoRow(Icons.person, "Gender", user.gender),
+          _infoRow(Icons.person, "Gender", user!.gender),
         ],
       ),
     );
@@ -227,7 +239,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.redAccent.withOpacity(0.1),
+              color: Colors.redAccent.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, size: 20, color: Colors.redAccent),
@@ -236,10 +248,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
-              ),
+              Text(label,
+                  style: const TextStyle(color: Colors.grey, fontSize: 12)),
               Text(
                 value,
                 style: const TextStyle(
@@ -255,7 +265,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildDonationHistory() {
-    // Mock history data
     final history = [
       {"date": "15 Oct 2023", "location": "Central Hospital", "amount": "450ml"},
       {"date": "10 Jun 2023", "location": "City Clinic", "amount": "450ml"},
@@ -269,31 +278,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.withOpacity(0.1)),
+            border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
           ),
           child: Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
+                  color: Colors.green.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.check, color: Colors.green, size: 20),
+                child:
+                const Icon(Icons.check, color: Colors.green, size: 20),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      item["location"]!,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      item["date"]!,
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
+                    Text(item["location"]!,
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(item["date"]!,
+                        style:
+                        const TextStyle(color: Colors.grey, fontSize: 12)),
                   ],
                 ),
               ),
@@ -360,7 +367,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 4),
           Text(
             desc,
-            style: TextStyle(color: accentColor.withOpacity(0.8), fontSize: 12),
+            style:
+            TextStyle(color: accentColor.withValues(alpha: 0.8), fontSize: 12),
           ),
         ],
       ),

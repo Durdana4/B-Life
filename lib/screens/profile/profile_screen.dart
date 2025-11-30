@@ -1,10 +1,42 @@
 import 'package:flutter/material.dart';
+import '../../models/user_model.dart';
+import '../../services/database/database_helper.dart';
+import 'edit_profile_screen.dart';
+import 'edit_email_screen.dart';
+import 'edit_phone_screen.dart';
+import 'edit_location_screen.dart';
+import 'change_password_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  UserModel? user;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    // For now, always load user with ID = 1
+    final data = await DatabaseHelper.instance.getUserById(1);
+    setState(() => user = data);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (user == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -15,121 +47,98 @@ class ProfileScreen extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // USER AVATAR
             CircleAvatar(
               radius: 55,
               backgroundColor: Colors.redAccent.withOpacity(0.2),
-              child: const Icon(
-                Icons.person,
-                size: 60,
-                color: Colors.redAccent,
-              ),
+              child: const Icon(Icons.person, size: 60, color: Colors.redAccent),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
 
-            // USER NAME
-            const Text(
-              "Jamol Shoymurzaev",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(height: 5),
             Text(
-              "jamol@example.com",
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              "${user!.name} ${user!.surname}",
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
+            Text(user!.email, style: TextStyle(color: Colors.grey[700])),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 20),
+            _section("Account Information"),
 
-            // SECTION TITLE
-            _sectionTitle("Account Information"),
+            _tile("Name", "${user!.name} ${user!.surname}", Icons.person, () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => EditProfileScreen(user: user!))
+              ).then((_) => _loadUser());
+            }),
 
-            // ACCOUNT INFO CARDS
-            _infoTile(Icons.email, "Email", "jamol@example.com"),
-            _infoTile(Icons.phone, "Phone Number", "+998 90 123 45 67"),
-            _infoTile(Icons.location_on, "Location", "Tashkent, Uzbekistan"),
+            _tile("Email", user!.email, Icons.email, () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => EditEmailScreen(user: user!))
+              ).then((_) => _loadUser());
+            }),
 
-            const SizedBox(height: 25),
-            _sectionTitle("Settings"),
+            _tile("Phone", user!.phone, Icons.phone, () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => EditPhoneScreen(user: user!))
+              ).then((_) => _loadUser());
+            }),
 
-            _settingsTile(Icons.lock, "Change Password"),
-            _settingsTile(Icons.notifications, "Notifications"),
-            _settingsTile(Icons.language, "Language"),
+            _tile("Location", user!.location, Icons.location_on, () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => EditLocationScreen(user: user!))
+              ).then((_) => _loadUser());
+            }),
+
+            const SizedBox(height: 20),
+            _section("Security"),
+
+            _tile("Change Password", "******", Icons.lock, () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => ChangePasswordScreen(userId: user!.id!)),
+              );
+            }),
 
             const SizedBox(height: 30),
-
-            // LOGOUT BUTTON
             ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 40,
-                  vertical: 14,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-              icon: const Icon(Icons.logout),
-              label: const Text(
-                "Logout",
-                style: TextStyle(fontSize: 16),
-              ),
               onPressed: () {
                 Navigator.pushReplacementNamed(context, '/login');
               },
-            ),
+              icon: const Icon(Icons.logout),
+              label: const Text("Logout"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
+              ),
+            )
           ],
         ),
       ),
     );
   }
 
-  // WIDGETS BELOW
-
-  Widget _sectionTitle(String title) {
+  Widget _section(String title) {
     return Align(
       alignment: Alignment.centerLeft,
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child:
+        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
       ),
     );
   }
 
-  Widget _infoTile(IconData icon, String title, String value) {
+  Widget _tile(String label, String value, IconData icon, VoidCallback onTap) {
     return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: ListTile(
-        leading: Icon(icon, color: Colors.redAccent),
-        title: Text(title),
-        subtitle: Text(value),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: () {},
-      ),
-    );
-  }
-
-  Widget _settingsTile(IconData icon, String label) {
-    return Card(
-      elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: ListTile(
         leading: Icon(icon, color: Colors.redAccent),
         title: Text(label),
+        subtitle: Text(value),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: () {},
+        onTap: onTap,
       ),
     );
   }
