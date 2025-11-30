@@ -8,7 +8,8 @@ Welcome to **B-Life**, a Flutter-based mobile application designed to bridge the
 
 ## 🚀 Project Overview
 
-B-Life is a comprehensive blood donation management system. It allows users to register as donors, create blood requests, view available donors, and manage their donation history. Built with **Flutter** and **SQLite**, it ensures a smooth, offline-capable experience.
+B-Life is a comprehensive blood donation management system. It allows users to register as donors, create blood requests, view available donors, and manage their donation history. Built with **Flutter** and **SQLite**, it ensures a smooth, offline-capable experience.  
+Software Requirements Specification Document: [LINK](https://docs.google.com/document/d/1S-Bcqam8NwTtYMirJzaRjQYuzLQYqbIQfYwW_YIHZ1U/edit?tab=t.0)
 
 ### ✨ Key Features
 *   **User Authentication:** Secure Registration and Login flows.
@@ -30,6 +31,7 @@ This project was brought to life by a dedicated team of developers. Here is the 
 *   **Contributions:**
     *   Implemented the **Core Functionality** and main user flows.
     *   Built the **Request CRUD** system (Add, List, Details, Edit, Delete).
+    *   Built the **Profile CRUD** system (Details, Edit, Delete).
     *   Developed the **DatabaseHelper** service with full SQLite integration.
     *   Set up the complete **Routing Structure** in `main.dart`.
     *   Authored the full **SRS (Software Requirements Specification)** document.
